@@ -1,1 +1,1 @@
-https://dev-uu11qs8p.auth0.com/authorize?audience=https://api.casting.com/&response_type=token&client_id=ILSxgHqXZ1F13aO8gdhjutvtzVH15O0H&redirect_uri=http://localhost:5000
+https://dev-uu11qs8p.auth0.com/authorize?audience=https://api.casting.com/&response_type=token&client_id=ILSxgHqXZ1F13aO8gdhjutvtzVH15O0H&redirect_uri=https://muco-casting-agency.herokuapp.com/
