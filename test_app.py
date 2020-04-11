@@ -117,38 +117,6 @@ class CastingAgencyTestCase(unittest.TestCase):
         self.assertEqual(data["success"], False)
         self.assertEqual(data["error"], 400)
 
-    # def test_get_movie(self):
-    #     res = self.client().get("/movies/1")
-    #     data = json.loads(res.data)
-    #
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data["success"], True)
-    #     self.assertTrue(data["movie"])
-    #
-    # def test_404_get_movie_which_does_not_exist(self):
-    #     res = self.client().patch("/movies/5")
-    #     data = json.loads(res.data)
-    #
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data["success"], False)
-    #     self.assertEqual(data["error"], 404)
-    #
-    # def test_get_actor(self):
-    #     res = self.client().get("/actors/1")
-    #     data = json.loads(res.data)
-    #
-    #     self.assertEqual(res.status_code, 200)
-    #     self.assertEqual(data["success"], True)
-    #     self.assertTrue(data["movie"])
-    #
-    # def test_404_get_actor_which_does_not_exist(self):
-    #     res = self.client().patch("/actors/5")
-    #     data = json.loads(res.data)
-    #
-    #     self.assertEqual(res.status_code, 404)
-    #     self.assertEqual(data["success"], False)
-    #     self.assertEqual(data["error"], 404)
-
     def test_update_movie(self):
         res = self.client().patch("/movies/4", json={
             "title": "My Life is Over",

@@ -2,13 +2,14 @@ from flask import Flask, jsonify, request, abort
 from database.models import setup_db, Movie, Actor, GenderType
 from flask_cors import CORS
 from auth.auth import AuthError, requires_auth
+import sys
 
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
     app.debug = True
-    setup_db(app)
     CORS(app)
+    setup_db(app)
 
     # CORS Headers
     @app.after_request
@@ -21,80 +22,26 @@ def create_app():
         )
         return response
 
-    @app.errorhandler(AuthError)
-    def unauthorized(error):
-        return (
-            jsonify({
-                "success": False,
-                "error": error.status_code,
-                "message": error.error
-            }),
-            error.status_code,
-        )
-
-    @app.errorhandler(400)
-    def bad_request(error):
-        return jsonify(
-            {
-                'success': False,
-                'error': 400,
-                'message': 'Bad request'
-            }
-        ), 400
-
-    @app.errorhandler(404)
-    def not_found(error):
-        return jsonify(
-            {
-                'success': False,
-                'error': 404,
-                'message': 'Not found'
-            }
-        ), 404
-
-    @app.errorhandler(422)
-    def unprocessable_entity(error):
-        return jsonify(
-            {
-                'success': False,
-                'error': 422,
-                'message': 'Unprocessable entity'
-            }
-        ), 422
-
-    @app.errorhandler(500)
-    def server_error(error):
-        return (
-            jsonify({
-                "success": False,
-                'error': 500,
-                "message": "Server error"
-            }),
-            500,
-        )
-
     @app.route('/')
     def home():
         return jsonify({
-            'success': True,
+            'success': True
         })
 
     @app.route('/movies')
     @requires_auth('read:movies')
     def get_all_movies():
-        movies = [movie.format() for movie in Movie.query.all()]
         return jsonify({
             'success': True,
-            'movies': movies
+            'movies': [movie.format() for movie in Movie.query.all()]
         })
 
     @app.route('/actors')
     @requires_auth('read:actors')
     def get_all_actors():
-        actors = [actor.format() for actor in Actor.query.all()]
         return jsonify({
             'success': True,
-            'actors': actors
+            'actors': [actor.format() for actor in Actor.query.all()]
         })
 
     @app.route('/movies', methods=['POST'])
@@ -105,9 +52,16 @@ def create_app():
         if 'title' not in body or 'release_date' not in body:
             abort(400)
 
+        actors = []
+        if 'actors' in body:
+            actor_ids = body['actors']
+            for id in actor_ids:
+                actors.append(Actor.query.get_or_404(id))
+
         try:
             title, release_date = body['title'], body['release_date']
             movie = Movie(title, release_date)
+            movie.actors = actors
             movie.insert()
 
             return jsonify({
@@ -115,6 +69,7 @@ def create_app():
                 'created': movie.format()
             }), 201
         except:
+            print(sys.exc_info())
             abort(422)
 
     @app.route('/actors', methods=['POST'])
@@ -127,7 +82,7 @@ def create_app():
 
         try:
             name, age, gender = body['name'], body['age'], body['gender']
-            gender = GenderType.male if gender == 'male' else GenderType.female
+            # gender = GenderType.male if gender == 'male' else GenderType.female
             actor = Actor(name, age, gender)
             actor.insert()
 
@@ -136,23 +91,8 @@ def create_app():
                 'created': actor.format()
             }), 201
         except:
+            print(sys.exc_info())
             abort(422)
-
-    # @app.route('/movies/<int:movie_id>')
-    # def get_movie_by_id(movie_id):
-    #     movie = Movie.query.get_or_404(movie_id)
-    #     return jsonify({
-    #         'success': True,
-    #         'movie': movie.format()
-    #     })
-    #
-    # @app.route('/actors/<int:actor_id>')
-    # def get_actor_by_id(actor_id):
-    #     actor = Actor.query.get_or_404(actor_id)
-    #     return jsonify({
-    #         'success': True,
-    #         'actor': actor.format()
-    #     })
 
     @app.route('/movies/<int:movie_id>', methods=['PATCH'])
     @requires_auth('update:movies')
@@ -220,6 +160,58 @@ def create_app():
             'success': True,
             'deleted': actor_id
         })
+
+    @app.errorhandler(AuthError)
+    def unauthorized(error):
+        return (
+            jsonify({
+                "success": False,
+                "error": error.status_code,
+                "message": error.error
+            }),
+            error.status_code,
+        )
+
+    @app.errorhandler(400)
+    def bad_request(error):
+        return jsonify(
+            {
+                'success': False,
+                'error': 400,
+                'message': 'Bad request'
+            }
+        ), 400
+
+    @app.errorhandler(404)
+    def not_found(error):
+        return jsonify(
+            {
+                'success': False,
+                'error': 404,
+                'message': 'Not found'
+            }
+        ), 404
+
+    @app.errorhandler(422)
+    def unprocessable_entity(error):
+        return jsonify(
+            {
+                'success': False,
+                'error': 422,
+                'message': 'Unprocessable entity'
+            }
+        ), 422
+
+    @app.errorhandler(500)
+    def server_error(error):
+        return (
+            jsonify({
+                "success": False,
+                'error': 500,
+                "message": "Server error"
+            }),
+            500,
+        )
 
     return app
 
