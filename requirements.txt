@@ -1,0 +1,11 @@
+flask
+sqlalchemy
+flask_sqlalchemy
+gunicorn
+flask_script
+flask_migrate
+psycopg2-binary
+flask_cors
+python-jose-cryptodome
+jose
+ipython
